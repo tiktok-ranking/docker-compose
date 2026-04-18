@@ -1,6 +1,6 @@
-[submodule "data-fetcher"]
-	path = data-fetcher
-	url = git@github.com:tiktok-ranking/data-fetcher.git
-[submodule "tiktok-ranking"]
-	path = tiktok-ranking
+[submodule "services/tiktok-ranking"]
+	path = services/tiktok-ranking
 	url = git@github.com:tiktok-ranking/tiktok-ranking.git
+[submodule "services/data-fetcher"]
+	path = services/data-fetcher
+	url = git@github.com:tiktok-ranking/data-fetcher.git
