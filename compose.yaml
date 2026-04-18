@@ -1,0 +1,65 @@
+services:
+  # 第1章 1.1 & 1.2: Nginx によるリバースプロキシ
+  reverse-proxy:
+    container_name: nginx
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./logs:/var/log/nginx
+    depends_on:
+      - frontend-corp
+      - frontend-rank
+    networks:
+      - app-network
+    restart: always
+
+  # 第2章: 自社コーポレートサイト
+  frontend-corp:
+    container_name: corporate-site
+    build:
+      context: ./services/corporate-site
+    environment:
+      - TZ=${TIMEZONE}
+      - TIKFINITY_API_TOKEN=${TIKFINITY_API_TOKEN}
+      - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID}
+      - GOOGLE_SERVICE_ACCOUNT_JSON=${GOOGLE_SERVICE_ACCOUNT_JSON}
+    networks:
+      - app-network
+    restart: always
+
+  # 第3章: ライバー向けランキングサイト
+  frontend-rank:
+    container_name: tiktok-ranking
+    build:
+      context: ./services/tiktok-ranking
+    volumes:
+      - ./data/creators:/app/data:ro
+    environment:
+      - TZ=${TIMEZONE}
+      - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID}
+      - GOOGLE_SERVICE_ACCOUNT_JSON=${GOOGLE_SERVICE_ACCOUNT_JSON}
+    networks:
+      - app-network
+    restart: always
+
+  # 第4章: データ抽出 Worker
+  worker-fetcher:
+    container_name: data-fetcher
+    build:
+      context: ./services/data-fetcher
+    volumes:
+      - ./data/creators:/app/data
+      - ./data-fetcher/profile:/app/profile
+      - ./logs:/app/logs
+    env_file: .env
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  data-creators:
