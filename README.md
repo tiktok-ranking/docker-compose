@@ -36,32 +36,15 @@ git submodule update --init --recursive
 ```
 
 ### 2. 環境変数の設定
-プロジェクトルートに `.env` ファイルを作成し、必要な環境変数を設定します。
-`.env.example` を参考にしてください。（初回起動時に必要なもののみ抜粋）
+`secrets/` ディレクトリ内に以下の 4 つの環境変数ファイルをそれぞれ作成し、設定を行います。
+設定値のテンプレートは `secrets/.env.example` を参考にしてください。
 
-```dotenv
-# .env
-# 共通
-TIMEZONE=Asia/Tokyo
+1.  **`.env.common`**: 全サービス共通の設定（タイムゾーンなど）
+2.  **`.env.google`**: Google Sheets API 関連の共通設定
+3.  **`.env.corporate`**: コーポレートサイト専用の設定（Tikfinity トークンなど）
+4.  **`.env.fetcher`**: データ抽出ワーカー専用の設定（TikTok ログイン情報、Discord通知など）
 
-# TikTok Credentials (data-fetcherで利用)
-TIKTOK_USERNAME=your_tiktok_id
-TIKTOK_PASSWORD=your_tiktok_password
-
-# Google Sheets API (corporate-site, tiktok-ranking, data-fetcherで利用)
-GOOGLE_SHEET_ID=your_google_sheet_id # 各種データが保存されるメインのスプレッドシートID
-# GOOGLE_MASTER_SHEET_ID=yyy # 必要であれば追加
-
-# サービスアカウントのJSONファイルパス (コンテナ内でのパス)
-# ホスト側には `secrets/service-account.json` として配置することを想定
-GOOGLE_SERVICE_ACCOUNT_JSON=/app/secrets/service-account.json
-
-# Notifications (data-fetcherで利用)
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/... # 処理通知用のDiscord Webhook URL
-
-# Tikfinity API (corporate-siteで利用)
-TIKFINITY_API_TOKEN=your_tikfinity_api_token
-```
+> **注意**: `secrets/` フォルダ内のファイルは機密情報を含むため、Git の管理対象から除外（`.gitignore` への追加）を強く推奨します。
 
 ### 3. Googleサービスアカウントキーの配置
 Googleスプレッドシート連携のために、Google Cloud Platformで作成したサービスアカウントのキーファイルを `secrets/service-account.json` としてプロジェクトルートに配置してください。
