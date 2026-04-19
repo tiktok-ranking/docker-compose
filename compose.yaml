@@ -17,29 +17,29 @@ services:
 
   # 第2章: 自社コーポレートサイト
   frontend-corp:
+    # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
     container_name: corporate-site
     build:
-      context: ./services/corporate-site
-    environment:
-      - TZ=${TIMEZONE}
-      - TIKFINITY_API_TOKEN=${TIKFINITY_API_TOKEN}
-      - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID}
-      - GOOGLE_SERVICE_ACCOUNT_JSON=${GOOGLE_SERVICE_ACCOUNT_JSON}
+      context: ./services/dummy
+    env_file:
+      - ./secrets/.env.common
+      - ./secrets/.env.google
+      - ./secrets/.env.corporate
     networks:
       - app-network
     restart: always
 
   # 第3章: ライバー向けランキングサイト
   frontend-rank:
+    # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
     container_name: tiktok-ranking
     build:
-      context: ./services/tiktok-ranking
+      context: ./services/dummy
     volumes:
       - ./data/creators:/app/data:ro
-    environment:
-      - TZ=${TIMEZONE}
-      - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID}
-      - GOOGLE_SERVICE_ACCOUNT_JSON=${GOOGLE_SERVICE_ACCOUNT_JSON}
+    env_file:
+      - ./secrets/.env.common
+      - ./secrets/.env.google
     networks:
       - app-network
     restart: always
@@ -47,13 +47,17 @@ services:
   # 第4章: データ抽出 Worker
   worker-fetcher:
     container_name: data-fetcher
+    profiles: ["task"]
     build:
-      context: ./services/data-fetcher
+      context: ./services/data-fetcher/data-fetcher
     volumes:
       - ./data/creators:/app/data
       - ./data-fetcher/profile:/app/profile
       - ./logs:/app/logs
-    env_file: .env
+    env_file:
+      - ./secrets/.env.common
+      - ./secrets/.env.google
+      - ./secrets/.env.fetcher
     networks:
       - app-network
 
