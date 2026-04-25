@@ -9,7 +9,7 @@
 2.  **ライバー向けランキングサイト (`tiktok-ranking`)**:
     *   所属ライバーの活動状況をランキング形式で表示し、モチベーション向上を促します。簡易認証機能付き。
 3.  **データ抽出ワーカー (`data-fetcher`)**:
-    *   TikTok Live Backstageからライバーの活動データを自動抽出し、Googleスプレッドシートへの同期とランキングサイトへのデータ提供を行います。週次で自動実行されます。
+    *   手動で取得した TikTok Live Backstage の活動データを読み込み、Googleスプレッドシートへの同期とランキングサイトへのデータ提供を行います。週次で自動実行されます。
 
 専用のデータベースサーバーは使用せず、Googleスプレッドシートおよび共有ボリューム上のローカルファイル（CSV/Excel）をデータストレージとして活用することで、運用保守の簡略化を図っています。
 
@@ -42,7 +42,7 @@ git submodule update --init --recursive
 1.  **`.env.common`**: 全サービス共通の設定（タイムゾーンなど）
 2.  **`.env.google`**: Google Sheets API 関連の共通設定
 3.  **`.env.corporate`**: コーポレートサイト専用の設定（Tikfinity トークンなど）
-4.  **`.env.fetcher`**: データ抽出ワーカー専用の設定（TikTok ログイン情報、Discord通知など）
+4.  **`.env.fetcher`**: データ抽出ワーカー専用の設定（Discord通知など）
 
 > **注意**: `secrets/` フォルダ内のファイルは機密情報を含むため、Git の管理対象から除外（`.gitignore` への追加）を強く推奨します。
 
@@ -83,29 +83,19 @@ docker compose logs -f
 *   **ライバー向けランキングサイト**: `http://localhost/ranking`
 
 ## 定期実行の設定 (`data-fetcher`)
-`data-fetcher` コンテナは、詳細設計書に基づき「毎週月曜日 26:00 (JST)」にTikTok Live Backstageからのデータ抽出を実行します。
+`data-fetcher` コンテナは、詳細設計書に基づき「毎週月曜日 26:00 (JST)」に配置されたデータの加工・同期を実行します。
 このスケジュール実行は、ホストマシンの OS に合わせて設定してください。
 
-### Windows の場合 (タスクスケジューラ)
-1. **タスクスケジューラ** を開き、「基本タスクの作成」を選択します。
-2. **トリガー**: 「毎週」を選択し、火曜日の 02:00 AM（月曜の 26:00）に設定します。
-3. **操作**: 「プログラムの開始」を選択します。
-4. **プログラム/スクリプト**: `docker` (または `docker.exe` のフルパス)
-5. **引数の追加**: `compose run --rm worker-fetcher`
-6. **開始 (オプション)**: プロジェクトのルートディレクトリのフルパス (`e:\Users\purin\Documents\GitHub\docker-compose`)
-
-### Linux の場合 (cron)
-1. `crontab -e` を実行し、以下の行を追加します。
-   ```bash
-   0 2 * * 2 cd e:/Users/purin/Documents/GitHub/docker-compose && /usr/bin/docker compose run --rm worker-fetcher
-   ```
+### 運用フロー
+1. 管理者が TikTok Live Backstage からデータを手動でエクスポートし、ホストの `./data` フォルダに配置します。
+2. スケジュールされたジョブ（または手動実行）により、`docker compose run --rm worker-fetcher` が実行されます。
+3. コンテナがデータを加工し、Google スプレッドシートを更新、アーカイブを作成します。
 
 ※ `--rm` オプションにより、実行終了後にタスク用コンテナが自動削除され、リソースを節約します。
 
 ## 注意事項
-*   **Seleniumログインプロファイル**: `data-fetcher` の初回実行時やセッション切れの際は、手動でのログインが必要になる場合があります。ログイン後に `data-fetcher/profile` ディレクトリ内にセッション情報が保存され、次回以降は自動ログインを試みます。
-*   **TikTok Live BackstageのUI変更**: TikTok Live BackstageのUI変更は、`data-fetcher` のスクレイピングロジックに影響を与える可能性があります。UI変更があった場合は、`data-fetcher` リポジトリのコード修正が必要になります。
 *   **Google Sheets APIのレート制限**: Google Sheets APIには利用制限があります。過度なアクセスを避けるため、各サービスのキャッシュ戦略を適切に設定してください。
+*   **利用規約の遵守**: 本システムの使用にあたっては、「TikTok Live Backstage利用規約」を遵守してください。特に、第7条（禁止事項）および第10条（秘密保持）に留意し、正当な権限に基づいた内部管理目的でのみ利用してください。自動化ツールの利用は、プラットフォームの負荷にならないよう適切に設定してください。
 
 ---
 
