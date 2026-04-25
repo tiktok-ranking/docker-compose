@@ -19,6 +19,7 @@ services:
   frontend-corp:
     # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
     container_name: corporate-site
+    image: dummy:latest
     build:
       context: ./services/dummy
     env_file:
@@ -33,6 +34,7 @@ services:
   frontend-rank:
     # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
     container_name: tiktok-ranking
+    image: dummy:latest
     build:
       context: ./services/dummy
     volumes:
@@ -47,13 +49,14 @@ services:
   # 第4章: データ抽出 Worker
   worker-fetcher:
     container_name: data-fetcher
+    image: data-fetcher:latest
     profiles: ["task"]
     build:
       context: ./services/data-fetcher/data-fetcher
     volumes:
-      - ./data/creators:/app/data
-      - ./data-fetcher/profile:/app/profile
+      - ./data:/app/data
       - ./logs:/app/logs
+      - ./secrets/service-account.json:/app/secrets/service-account.json:ro
     env_file:
       - ./secrets/.env.common
       - ./secrets/.env.google
