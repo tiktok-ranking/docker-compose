@@ -60,6 +60,17 @@ docker compose -f compose.infra.yaml up -d
 ### 3. Googleサービスアカウントキーの配置
 Googleスプレッドシート連携のために、Google Cloud Platformで作成したサービスアカウントのキーファイルを `secrets/service-account.json` としてプロジェクトルートに配置してください。
 
+### 4. SSL証明書保存用ファイルの作成 (acme.json)
+Traefikが取得したSSL証明書を保存するためのファイルを作成し、適切な権限を設定します。このファイルは所有者のみが読み書き可能（Linux環境では権限 `600`）である必要があります。
+
+```bash
+mkdir letsencrypt
+touch letsencrypt/acme.json
+chmod 600 letsencrypt/acme.json
+```
+
+> **注意**: Windows環境（Docker Desktop）を使用している場合でも、空のファイルを作成しておくことで、Docker起動時にファイルではなくディレクトリとして自動生成されてしまう問題を回避できます。
+
 ```text
 docker-compose/
 ├── secrets/            # Git管理対象外
@@ -69,6 +80,8 @@ docker-compose/
 │   ├── .env.fetcher    # ワーカー専用
 │   ├── .env.example    # 設定テンプレート
 │   └── service-account.json # Google認証キー
+├── letsencrypt/
+│   └── acme.json       # SSL証明書保存用 (要chmod 600)
 ├── services/
 └── ...
 ```

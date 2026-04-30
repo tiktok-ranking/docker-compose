@@ -8,11 +8,21 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      # - "--entrypoints.websecure.address=:443"
+      # HTTP to HTTPS Redirection
+      # - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      # - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Let's Encrypt (ACME) Configuration
+      # - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      # - "--certificatesresolvers.myresolver.acme.email=${acme_email}"
+      # - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
+      # - "443:443"
       - "8080:8080" # Traefik Dashboard
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # - "./letsencrypt:/letsencrypt"
     networks:
       - app-network
     restart: always
@@ -21,14 +31,66 @@ services:
   portainer:
     container_name: portainer
     image: portainer/portainer-ce:latest
-    ports:
-      - "9000:9000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - portainer-data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${base_domain}`)"
+      - "traefik.http.routers.portainer.entrypoints=${entrypoints}"
+      # - "traefik.http.routers.portainer.tls.certresolver=${certresolver}"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
     networks:
       - app-network
     restart: always
+
+  # 第4.1章: 認証基盤 (Keycloak)
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:26.6
+    command: start-dev --import-realm
+    env_file:
+      - ./secrets/.env.keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "true"
+    volumes:
+      - ./services/auth/realms:/opt/keycloak/data/import:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.${base_domain}`)"
+      - "traefik.http.routers.auth.entrypoints=${entrypoints}"
+      # - "traefik.http.routers.auth.tls.certresolver=${certresolver}"
+      - "traefik.http.services.auth.loadbalancer.server.port=8080"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: always
+
+  # Keycloak 用データベース
+  keycloak-db:
+    container_name: keycloak-db
+    image: postgres:16.4-alpine
+    env_file:
+      - ./secrets/.env.keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 
 networks:
   app-network:
@@ -36,3 +98,4 @@ networks:
 
 volumes:
   portainer-data:
+  keycloak-db-data:
