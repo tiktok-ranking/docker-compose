@@ -1,0 +1,38 @@
+services:
+  # 第1章: Traefik によるリバースプロキシ
+  traefik:
+    container_name: traefik
+    image: traefik:v2.11
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080" # Traefik Dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - app-network
+    restart: always
+
+  # 管理ツール: Portainer
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    ports:
+      - "9000:9000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - portainer-data:/data
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    name: app-network # 明示的に名前を固定してアプリ側から参照しやすくします
+
+volumes:
+  portainer-data:
