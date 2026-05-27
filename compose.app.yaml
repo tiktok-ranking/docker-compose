@@ -32,7 +32,7 @@ services:
       args:
         - NEXT_PUBLIC_KEYCLOAK_URL=http://auth.${base_domain}/realms/ranking
     volumes:
-      - ./data/:/app/public/data:ro
+      - /home/remote/デスクトップ/live-datas:/app/public/data:ro
       - ./secrets/service-account.json:/app/secrets/service-account.json:ro
     labels:
       - "traefik.enable=true"
@@ -53,7 +53,7 @@ services:
     build:
       context: ./services/data-fetcher
     volumes:
-      - ./data:/app/data
+      - /home/remote/デスクトップ/live-datas:/app/data
       - ./logs:/app/logs
       - ./secrets/service-account.json:/app/secrets/service-account.json:ro
     env_file:
