@@ -5,28 +5,35 @@ services:
     image: traefik:v2.11
     command:
       - "--api.insecure=true"
+
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+
       - "--entrypoints.web.address=:80"
-      # - "--entrypoints.websecure.address=:443"
-      # HTTP to HTTPS Redirection
-      # - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      # - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      # Let's Encrypt (ACME) Configuration
-      # - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      # - "--certificatesresolvers.myresolver.acme.email=${acme_email}"
-      # - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.websecure.address=:443"
+
+      # HTTP → HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.to=${entrypoints}"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+
+      # Let's Encrypt
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${acme_email}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+
     ports:
       - "80:80"
-      # - "443:443"
-      - "8080:8080" # Traefik Dashboard
+      - "443:443"
+      - "8080:8080"
+
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      # - "./letsencrypt:/letsencrypt"
+      - "./letsencrypt:/letsencrypt"
+
     networks:
       - app-network
-    restart: always
 
+    restart: always
   # 管理ツール: Portainer
   portainer:
     container_name: portainer
