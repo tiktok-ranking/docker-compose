@@ -19,31 +19,17 @@
 専用のデータベースサーバーは使用せず、Googleスプレッドシートおよび共有ボリューム上のローカルファイル（CSV/Excel）をデータストレージとして活用することで、運用保守の簡略化を図っています。
 1. **compose.infra.yaml**: 共通ネットワーク、リバースプロキシ (Traefik)、コンテナ管理 (Portainer) などの基盤サービスを定義します。
 2. **compose.app.yaml**: 各フロントエンド、認証基盤 (Keycloak)、データ抽出 Worker など、業務ロジックを担うアプリケーションサービスを定義します。
+3. **compose.prod.yaml**: 本番環境用の SSL/TLS 設定や HTTP リダイレクト設定などを定義します（オーバーライド用）。
 
-## 必要なソフトウェアとインストール手順
-本システムをローカル環境で起動・実行するためには、以下のソフトウェアが必要です。
-## クイックスタート
+---
 
-1.  **Git**:
-    *   ソースコード管理システムです。
-    *   [Git公式サイト](https://git-scm.com/downloads) からお使いのOSに応じたインストーラーをダウンロードし、インストールしてください。
-2.  **Docker Desktop**:
-    *   コンテナ型の仮想環境を構築するためのソフトウェアです。Docker Engine、Docker Composeを含みます。
-    *   [Docker公式サイト](https://www.docker.com/products/docker-desktop/) からお使いのOSに応じたインストーラーをダウンロードし、インストールしてください。
-    *   インストール後、Docker Desktopアプリケーションを起動し、Dockerデーモンが動作していることを確認してください。
+## 導入手順
 
-## プロジェクトのセットアップ
-
-### 1. リポジトリのクローンとサブモジュールの初期化
-まず、このメインリポジトリをクローンし、続いて各サービス（サブモジュール）を初期化・更新します。
-
-### 1. ネットワークとインフラの起動
-最初に、各サービスが通信するための共通ネットワークとリバースプロキシを起動します。
+### 1. リポジトリのクローンと初期化
 ```bash
-git clone https://github.com/your-username/docker-compose.git # あなたのリポジトリURLに置き換えてください
+git clone https://github.com/your-username/docker-compose.git
 cd docker-compose
 git submodule update --init --recursive
-docker compose -f compose.infra.yaml up -d
 ```
 
 ### 2. 環境変数の設定
@@ -86,28 +72,30 @@ docker-compose/
 └── ...
 ```
 
-## コンテナの起動
-プロジェクトルートディレクトリで以下のコマンドを実行します。
+## コンテナの起動手順
 
-### 2. アプリケーションの起動
-インフラが起動した後、各業務サービスを起動します。
-```bash
-docker compose build # 初回起動時やDockerfile変更時に実行
-docker compose up -d # バックグラウンドでコンテナを起動
-docker compose -f compose.app.yaml up -d
-```
+### A. 開発環境 (HTTP / localhost)
+1. **環境変数の準備**: `cp secrets/.env.example .env`
+2. **起動**: 
+   ```bash
+   docker compose -f compose.infra.yaml -f compose.app.yaml up -d --build
+   ```
+3. **アクセス**: http://localhost, http://ranking.localhost
 
-コンテナのログを確認するには、以下のコマンドを使用します。
+### B. 本番環境 (HTTPS / Domain)
+1. **環境変数の設定**: `.env` の `base_domain` をドメイン名に変更し、`PROTOCOL=https` とします。
+2. **起動**:
+   ```bash
+   docker compose -f compose.infra.yaml -f compose.app.yaml -f compose.prod.yaml up -d --build
+   ```
+3. **アクセス**: `https://your-domain.com`
 
-```bash
-docker compose logs -f
-```
+---
 
-## アクセス
-システムが起動したら、以下のURLにアクセスして各サービスを確認できます。
+## コンテナの管理
 
-*   **自社コーポレートサイト**: `http://localhost/`
-*   **ライバー向けランキングサイト**: `http://localhost/ranking`
+**ログの確認:** `docker compose logs -f`
+**停止:** `docker compose down`
 
 ## 定期実行の設定 (`data-fetcher`)
 `data-fetcher` コンテナは、詳細設計書に基づき「毎週月曜日 26:00 (JST)」に配置されたデータの加工・同期を実行します。

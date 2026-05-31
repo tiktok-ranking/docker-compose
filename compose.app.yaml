@@ -9,8 +9,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.corp.rule=Host(`${base_domain}`)"
-      - "traefik.http.routers.corp.entrypoints=${entrypoints}"
-      # - "traefik.http.routers.corp.tls.certresolver=${certresolver}"
+      - "traefik.http.routers.corp.entrypoints=web"
     env_file:
       - ./secrets/.env.common
       - ./secrets/.env.google
@@ -30,19 +29,15 @@ services:
     build:
       context: ./services/tiktok-ranking
       args:
-        - NEXT_PUBLIC_KEYCLOAK_URL=http://auth.${base_domain}/realms/ranking
+        - NEXT_PUBLIC_KEYCLOAK_URL=${PROTOCOL:-http}://auth.${base_domain}/realms/ranking
         - NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
     volumes:
-      - /home/remote/デスクトップ/live-datas:/app/public/data:ro
+      - ${LIVE_DATA_PATH}:/app/public/data:ro
       - ./secrets/service-account.json:/app/secrets/service-account.json:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.rank.rule=Host(`ranking.${base_domain}`)"
-      - "traefik.http.routers.rank.entrypoints=${entrypoints}"
-      # - "traefik.http.routers.rank.tls.certresolver=${certresolver}"
-    
-      - "traefik.http.routers.rank.tls=true"
-      - "traefik.http.routers.rank.tls.certresolver=myresolver"
+      - "traefik.http.routers.rank.entrypoints=web"
 
       - "traefik.http.services.rank.loadbalancer.server.port=3000"
     env_file:
@@ -59,7 +54,7 @@ services:
     build:
       context: ./services/data-fetcher
     volumes:
-      - /home/remote/デスクトップ/live-datas:/app/data
+      - ${LIVE_DATA_PATH}:/app/data
       - ./logs:/app/logs
       - ./secrets/service-account.json:/app/secrets/service-account.json:ro
     env_file:

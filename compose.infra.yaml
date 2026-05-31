@@ -5,35 +5,18 @@ services:
     image: traefik:v2.11
     command:
       - "--api.insecure=true"
-
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-
-      # HTTP → HTTPS
-      - "--entrypoints.web.http.redirections.entryPoint.to=${entrypoints}"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-
-      # Let's Encrypt
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=${acme_email}"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-
     ports:
       - "80:80"
-      - "443:443"
-      - "8080:8080"
-
+      - "8080:8080" # Traefik Dashboard
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
-
     networks:
       - app-network
-
     restart: always
+
   # 管理ツール: Portainer
   portainer:
     container_name: portainer
@@ -44,8 +27,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.portainer.rule=Host(`portainer.${base_domain}`)"
-      - "traefik.http.routers.portainer.entrypoints=${entrypoints}"
-      # - "traefik.http.routers.portainer.tls.certresolver=${certresolver}"
+      - "traefik.http.routers.portainer.entrypoints=web"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
     networks:
       - app-network
@@ -69,8 +51,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=Host(`auth.${base_domain}`)"
-      - "traefik.http.routers.auth.entrypoints=${entrypoints}"
-      # - "traefik.http.routers.auth.tls.certresolver=${certresolver}"
+      - "traefik.http.routers.auth.entrypoints=web"
       - "traefik.http.services.auth.loadbalancer.server.port=8080"
     depends_on:
       keycloak-db:

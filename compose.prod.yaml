@@ -1,0 +1,44 @@
+services:
+  traefik:
+    command:
+      - "--api.insecure=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # 全サービス共通の HTTP -> HTTPS リダイレクト設定
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Let's Encrypt 設定
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${acme_email}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+
+  frontend-corp:
+    labels:
+      - "traefik.http.routers.corp.entrypoints=websecure"
+      - "traefik.http.routers.corp.tls=true"
+      - "traefik.http.routers.corp.tls.certresolver=letsencrypt"
+
+  frontend-rank:
+    labels:
+      - "traefik.http.routers.rank.entrypoints=websecure"
+      - "traefik.http.routers.rank.tls=true"
+      - "traefik.http.routers.rank.tls.certresolver=letsencrypt"
+
+  portainer:
+    labels:
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
+
+  keycloak:
+    labels:
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.routers.auth.tls.certresolver=letsencrypt"
+      # Keycloak特有の本番設定上書き
+      - "KC_HOSTNAME=auth.${base_domain}"
+      - "KC_HOSTNAME_STRICT=true"
