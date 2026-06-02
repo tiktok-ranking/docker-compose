@@ -1,0 +1,13 @@
+date: "2024-05-25"
+category: "Traefik"
+item: "Traefikルーター名の競合とBlue-Green設定の不備修正"
+description: "同一composeファイル内で同じルーター名を使用していた問題を修正。"
+context: |
+  frontend-rank-prod と next で traefik.http.routers.rank を共有していたため、
+  一方の設定が上書きされる、あるいは期待通りに動作しないリスクがあった。
+lessons_learned:
+  - 複数のサービスを並行稼働させる場合、Router名（traefik.http.routers.{name}）は一意にする必要がある。
+  - Blue-Greenを実現するには、Hostルールを統一し、Priorityでルーティングを制御しなければならない。
+  - Priorityを指定しない場合、Traefikはランダム（Round Robin）に振り分ける。
+resolution: "サービス名をblue/greenに、ルーター名をrank-blue/rank-greenに変更し、設計書通りのPriorityを設定した。"
+status: "Fixed"

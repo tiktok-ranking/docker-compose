@@ -1,0 +1,16 @@
+date: "2024-05-23"
+category: "Infrastructure"
+item: "TraefikによるBlue-Greenデプロイの実装"
+description: "Docker Compose環境でサービス停止なしの切り替えを実現するためのラベル設定。"
+context: |
+  本番環境の更新においてサービス停止時間を極小化するため、TraefikのRouter Priorityを利用した方式を採用。
+  BlueとGreenで同一のHostルールを持ちつつ、Priorityの数値が高い方にトラフィックが流れる特性を利用する。
+technical_details:
+  - ルール: traefik.http.routers.{name}.rule=Host(...)
+  - 制御ラベル: traefik.http.routers.{name}.priority
+  - 切替手順: 
+      1. 新コンテナ(Green)を高いPriorityで起動。
+      2. 動作確認後、旧コンテナ(Blue)を停止。
+      3. 切り戻しが必要な場合はGreenを停止すれば、即座にBlue（Priority 10）に切り替わる。
+resolution: "Router Priorityによる動的ルーティング制御を採用。"
+status: "Accepted"

@@ -19,10 +19,32 @@ services:
     restart: always
 
   # 第3章: ライバー向けランキングサイト
-  frontend-rank:
+  frontend-rank-prod:
     # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
     container_name: tiktok-ranking
-    image: tiktok-ranking:latest
+    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.2.0
+    extra_hosts:
+      - "auth.${base_domain}:host-gateway"
+      - "ranking.${base_domain}:host-gateway"
+    volumes:
+      - ${LIVE_DATA_PATH}:/app/public/data:ro
+      - ./secrets/service-account.json:/app/secrets/service-account.json:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rank-prod.rule=Host(`ranking.${base_domain}`)"
+      - "traefik.http.routers.rank-prod.entrypoints=web"
+
+      - "traefik.http.services.rank-prod.loadbalancer.server.port=3000"
+    env_file:
+      - ./secrets/.env.ranking
+    networks:
+      - app-network
+    restart: always
+
+  frontend-rank-next:
+    # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
+    container_name: tiktok-ranking-next
+    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.0
     extra_hosts:
       - "auth.${base_domain}:host-gateway"
       - "ranking.${base_domain}:host-gateway"
@@ -36,15 +58,16 @@ services:
       - ./secrets/service-account.json:/app/secrets/service-account.json:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.rank.rule=Host(`ranking.${base_domain}`)"
-      - "traefik.http.routers.rank.entrypoints=web"
+      - "traefik.http.routers.rank-next.rule=Host(`ranking-next.${base_domain}`)"
+      - "traefik.http.routers.rank-next.entrypoints=web"
 
-      - "traefik.http.services.rank.loadbalancer.server.port=3000"
+      - "traefik.http.services.rank-next.loadbalancer.server.port=3000"
     env_file:
       - ./secrets/.env.ranking
     networks:
       - app-network
     restart: always
+
 
   # 第4章: データ抽出 Worker
   worker-fetcher:

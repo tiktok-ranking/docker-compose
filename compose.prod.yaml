@@ -22,11 +22,17 @@ services:
       - "traefik.http.routers.corp.tls=true"
       - "traefik.http.routers.corp.tls.certresolver=letsencrypt"
 
-  frontend-rank:
+  frontend-rank-prod:
     labels:
-      - "traefik.http.routers.rank.entrypoints=websecure"
-      - "traefik.http.routers.rank.tls=true"
-      - "traefik.http.routers.rank.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.rank-prod.entrypoints=websecure"
+      - "traefik.http.routers.rank-prod.tls=true"
+      - "traefik.http.routers.rank-prod.tls.certresolver=letsencrypt"
+
+  frontend-rank-next:
+    labels:
+      - "traefik.http.routers.rank-next.entrypoints=websecure"
+      - "traefik.http.routers.rank-next.tls=true"
+      - "traefik.http.routers.rank-next.tls.certresolver=letsencrypt"
 
   portainer:
     labels:
