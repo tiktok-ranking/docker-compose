@@ -42,7 +42,7 @@ services:
 
   frontend-rank-next:
     container_name: tiktok-ranking-next
-    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.0
+    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.2.1
     build:
       context: ./services/tiktok-ranking
       args:
