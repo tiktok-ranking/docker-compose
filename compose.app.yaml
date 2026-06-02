@@ -20,7 +20,6 @@ services:
 
   # 第3章: ライバー向けランキングサイト
   frontend-rank-prod:
-    # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
     container_name: tiktok-ranking
     image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.2.0
     extra_hosts:
@@ -42,17 +41,16 @@ services:
     restart: always
 
   frontend-rank-next:
-    # NOTE: 本サイトの実装が完了するまでダミーサイトを表示します
     container_name: tiktok-ranking-next
     image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.0
+    build:
+      context: ./services/ranking-next
+      args:
+        - NEXT_PUBLIC_KEYCLOAK_URL=http://auth.${base_domain}/realms/ranking
+        - NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
     extra_hosts:
       - "auth.${base_domain}:host-gateway"
       - "ranking.${base_domain}:host-gateway"
-    build:
-      context: ./services/tiktok-ranking
-      args:
-        - NEXT_PUBLIC_KEYCLOAK_URL=${PROTOCOL:-http}://auth.${base_domain}/realms/ranking
-        - NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
     volumes:
       - ${LIVE_DATA_PATH}:/app/public/data:ro
       - ./secrets/service-account.json:/app/secrets/service-account.json:ro
