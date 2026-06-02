@@ -2,6 +2,8 @@ services:
   traefik:
     command:
       - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       # 全サービス共通の HTTP -> HTTPS リダイレクト設定
@@ -24,15 +26,21 @@ services:
 
   frontend-rank-prod:
     labels:
-      - "traefik.http.routers.rank-prod.entrypoints=websecure"
-      - "traefik.http.routers.rank-prod.tls=true"
-      - "traefik.http.routers.rank-prod.tls.certresolver=letsencrypt"
+    - "traefik.enable=true"
+    - "traefik.http.routers.rank-prod.rule=Host(`ranking.${base_domain}`)"
+    - "traefik.http.routers.rank-prod.entrypoints=websecure"
+    - "traefik.http.routers.rank-prod.tls=true"
+    - "traefik.http.routers.rank-prod.tls.certresolver=letsencrypt"
+    - "traefik.http.services.rank-prod.loadbalancer.server.port=3000"
 
   frontend-rank-next:
     labels:
-      - "traefik.http.routers.rank-next.entrypoints=websecure"
-      - "traefik.http.routers.rank-next.tls=true"
-      - "traefik.http.routers.rank-next.tls.certresolver=letsencrypt"
+    - "traefik.enable=true"
+    - "traefik.http.routers.rank-next.rule=Host(`ranking-next.${base_domain}`)"
+    - "traefik.http.routers.rank-next.entrypoints=websecure"
+    - "traefik.http.routers.rank-next.tls=true"
+    - "traefik.http.routers.rank-next.tls.certresolver=letsencrypt"
+    - "traefik.http.services.rank-next.loadbalancer.server.port=3000"
 
   portainer:
     labels:

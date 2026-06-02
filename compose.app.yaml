@@ -20,7 +20,7 @@ services:
 
   # 第3章: ライバー向けランキングサイト
   frontend-rank-prod:
-    container_name: tiktok-ranking
+    container_name: tiktok-ranking-prod
     image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.2.0
     extra_hosts:
       - "auth.${base_domain}:host-gateway"
@@ -44,7 +44,7 @@ services:
     container_name: tiktok-ranking-next
     image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.0
     build:
-      context: ./services/ranking-next
+      context: ./services/tiktok-ranking
       args:
         - NEXT_PUBLIC_KEYCLOAK_URL=http://auth.${base_domain}/realms/ranking
         - NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
