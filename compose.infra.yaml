@@ -40,6 +40,7 @@ services:
     command: start-dev --import-realm
     env_file:
       - ./secrets/.env.keycloak
+    profiles: ["auth"]
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
@@ -66,6 +67,7 @@ services:
     image: postgres:16.4-alpine
     env_file:
       - ./secrets/.env.keycloak-db
+    profiles: ["auth"]
     environment:
       POSTGRES_DB: keycloak
     volumes:

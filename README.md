@@ -76,15 +76,19 @@ docker-compose/
 
 ### A. 開発環境 (HTTP / localhost)
 1. **環境変数の準備**: `cp secrets/.env.example .env`
-2. **起動**: 
+2. **起動**: (認証を利用する場合、`.env` で `NEXT_PUBLIC_AUTH_ENABLED=true` とした上で `--profile auth` を指定します)
    ```bash
+   # 認証あり
+   docker compose -f compose.infra.yaml -f compose.app.yaml --profile auth up -d --build
+
+   # 認証なし
    docker compose -f compose.infra.yaml -f compose.app.yaml up -d --build
    ```
 3. **アクセス**: http://localhost, http://ranking.localhost
 
 ### B. 本番環境 (HTTPS / Domain)
 1. **環境変数の設定**: `.env` の `base_domain` をドメイン名に変更し、`PROTOCOL=https` とします。
-2. **起動**:
+2. **起動**: (認証を利用する場合は同様に `--profile auth` を追加してください)
    ```bash
    docker compose -f compose.infra.yaml -f compose.app.yaml -f compose.prod.yaml up -d --build
    ```
