@@ -85,9 +85,19 @@ services:
     networks:
       - app-network
 
+  redis:
+    container_name: redis-ranking
+    image: redis:8-alpine
+    restart: always
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
 networks:
   app-network:
     external: true
 
 volumes:
   data-creators:
+  redis-data:
