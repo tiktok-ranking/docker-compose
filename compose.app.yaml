@@ -21,7 +21,7 @@ services:
   # 第3章: ライバー向けランキングサイト
   frontend-rank-prod:
     container_name: tiktok-ranking-prod
-    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.1
+    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.2
     extra_hosts:
       - "auth.${base_domain}:host-gateway"
       - "ranking.${base_domain}:host-gateway"
@@ -42,7 +42,7 @@ services:
 
   frontend-rank-next:
     container_name: tiktok-ranking-next
-    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.2
+    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.3
     build:
       context: ./services/tiktok-ranking
       args:
