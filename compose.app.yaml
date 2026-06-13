@@ -21,7 +21,7 @@ services:
   # 第3章: ライバー向けランキングサイト
   frontend-rank-prod:
     container_name: tiktok-ranking-prod
-    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.2
+    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.3
     extra_hosts:
       - "auth.${base_domain}:host-gateway"
       - "ranking.${base_domain}:host-gateway"
@@ -42,7 +42,7 @@ services:
 
   frontend-rank-next:
     container_name: tiktok-ranking-next
-    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.3
+    image: ghcr.io/tiktok-ranking/tiktok-ranking:v0.3.4
     build:
       context: ./services/tiktok-ranking
       args:
@@ -70,7 +70,7 @@ services:
   # 第4章: データ抽出 Worker
   worker-fetcher:
     container_name: data-fetcher
-    image: ghcr.io/tiktok-ranking/data-fetcher:v0.3.2
+    image: ghcr.io/tiktok-ranking/data-fetcher:v0.3.3
     profiles: ["task"]
     build:
       context: ./services/data-fetcher
