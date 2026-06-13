@@ -70,7 +70,7 @@ services:
   # 第4章: データ抽出 Worker
   worker-fetcher:
     container_name: data-fetcher
-    image: ghcr.io/tiktok-ranking/data-fetcher:v0.3.0
+    image: ghcr.io/tiktok-ranking/data-fetcher:v0.3.2
     profiles: ["task"]
     build:
       context: ./services/data-fetcher
